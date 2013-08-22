@@ -39,3 +39,13 @@ Neo4Forum
     
 6) Numero di post pubblicati da Maggio 2013 (indicativamente data dell’ultima release di Neo4J) in funzione dei singoli tag;
 
+    Epoch timestamp: 1367366400
+    Timestamp in milliseconds: 1367366400000
+    Human time (GMT): Wed, 01 May 2013 00:00:00 GMT
+    Human time (your time zone): 1/5/2013 02:00:00
+
+    MATCH (q:Question)-[:TaggedWith]->(t:Tag),
+    (p:Post)-[:Replies|Improves]->(q)
+    WHERE q.data >= '1367366400'
+    RETURN t.name, count(q)+count(p) AS Totale
+    ORDER BY Totale DESC;
