@@ -22,14 +22,13 @@ Neo4Forum
     RETURN q.title, collect(u.username);
     
 4) Data la domanda senza risposta con più visite, selezionare le domande inerenti (al più in due hop);
-(Da verificare, al momento della scrittura non erano presenti relationi :Replies)
 
     START q = node(*)
-    MATCH (q:Question)-[:RelatedTo*1..2]-(related:Question)
-    WHERE not((q)-[:Replies]-())
-    RETURN q.title, related.title
-    ORDER BY q.views DESC
-    LIMIT 1;
+    MATCH path = (q:Question)-[:RelatedTo*1..2]->(related:Question)
+    WHERE not((q)-[:Replies]-()) 
+    		and ALL (x IN nodes(path) where q.views >= x.views)
+    RETURN distinct related.title, related.score
+    ORDER BY related.score DESC;
 
 5) Calcolo della reputazione degli utenti (somma dei punteggi guadagnati / numero di interventi fatti);
 
