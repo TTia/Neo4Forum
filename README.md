@@ -1,5 +1,8 @@
 Neo4Forum
 =========
+0) Creazione di un indice sui nodi (:Question(pid))
+
+    CREATE INDEX ON :Question(pid)
 
 1) Selezione delle ultime dieci domande postate con punteggio positivo e numero di visite superiore a 50;
 
@@ -14,12 +17,28 @@ Neo4Forum
     MATCH (q:Question)-[r:TaggedWith]-(t:Tag)
     WHERE t.name =~ '(?i)cypher'
     RETURN q.title;
+    Returned 582 rows.Query took 1605ms
+    MATCH (t:Tag)
+    WHERE t.name =~ '(?i)cypher'
+    WITH t
+    MATCH (q:Question)-[r:TaggedWith]-(t)
+    RETURN q.title;
+    Returned 582 rows.Query took 152ms
     
 3) Selezione degli utenti che sfruttano “C#” e “Neo4J” (hanno postato domande con tag “C#” o risposte e commenti all’interno di domande con tag “C#”)
 
     MATCH (u:User)-[*1..2]-(q:Question)-[:TaggedWith]-(t:Tag)
     WHERE t.name =~ '(?i)c#'
-    RETURN q.title, collect(u.username);
+    RETURN DISTINCT u.username;
+    
+    MATCH (t:Tag)
+    WHERE t.name =~ '(?i)c#'    
+    WITH t
+    MATCH (u:User)-[*1..2:WrittenBy]-(q:Question)-[:TaggedWith]-(t)
+    RETURN DISTINCT u.username;
+    
+    u-WrittenBy-q
+    u-WrittenBy-
     
 4) Data la domanda senza risposta con più visite, selezionare le domande inerenti (al più in due hop);
 
