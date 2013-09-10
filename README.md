@@ -27,31 +27,33 @@ Neo4Forum
     
 3) Selezione degli utenti che sfruttano “C#” e “Neo4J” (hanno postato domande con tag “C#” o risposte e commenti all’interno di domande con tag “C#”)
 
-    MATCH (u:User)-[*1..2]-(q:Question)-[:TaggedWith]-(t:Tag)
-    WHERE t.name =~ '(?i)c#'
+    MATCH (u:User)-[r*1..2]-(q:Question)-[:TaggedWith]-(t:Tag)
+    WHERE t.name =~ '(?i)c#' and NONE (x IN r WHERE type(x) = 'RelatedTo')
     RETURN DISTINCT u.username;
+    returned 30 rows.Query took 17918ms
     
     MATCH (t:Tag)
     WHERE t.name =~ '(?i)c#'    
     WITH t
-    MATCH (u:User)-[*1..2:WrittenBy]-(q:Question)-[:TaggedWith]-(t)
+	MATCH (u:User)-[r*1..2]-(q:Question)-[:TaggedWith]-(t)
+    WHERE NONE (x IN r WHERE type(x) = 'RelatedTo')
     RETURN DISTINCT u.username;
-    
-    u-WrittenBy-q
-    u-WrittenBy-
+    Returned 30 rows.Query took 124ms
     
 4) Data la domanda senza risposta con più visite, selezionare le domande inerenti (al più in due hop);
 
-    START q = node(*)
-    MATCH path = (q:Question)-[:RelatedTo*1..2]->(related:Question)
-    WHERE not((q)-[:Replies]-()) 
-    		and ALL (x IN nodes(path) where q.views >= x.views)
-    RETURN distinct related.title, related.score
-    ORDER BY related.score DESC;
+    MATCH nodes = (q:Question)
+    WHERE not((q)<-[:Replies]-())
+	WITH q
+    ORDER BY q.views DESC
+    LIMIT 1
+    MATCH (q)-[:RelatedTo*1..2]->(related:Question)
+    RETURN distinct related.title;
+    Returned 28 rows.Query took 41ms
 
 5) Calcolo della reputazione degli utenti (somma dei punteggi guadagnati / numero di interventi fatti);
 
-    MATCH (p:Post)-[:WrittenBy]->(u:User)
+    MATCH (p:Post)-[:WrittenBy]-(u:User)
     RETURN u.username, SUM(p.score)/(count(p)*1.0) as Media, SUM(p.score) as Punteggio, count(p) as Post
     ORDER BY Media DESC;
     
@@ -67,3 +69,13 @@ Neo4Forum
     WHERE q.data >= '1367366400'
     RETURN t.name, count(q)+count(p) AS Totale
     ORDER BY Totale DESC;
+    Returned 240 rows.Query took 257ms
+    
+    MATCH (q:Question)
+    WHERE q.data >= '1367366400'
+    WITH q
+    MATCH (q)-[:TaggedWith]->(t:Tag),
+    (p:Post)-[:Replies|Improves]->(q)
+    RETURN t.name, count(q)+count(p) AS Totale
+    ORDER BY Totale DESC;
+    Returned 240 rows.Query took 223ms
