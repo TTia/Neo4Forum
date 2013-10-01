@@ -1,8 +1,11 @@
 Neo4Forum
 =========
-0) Creazione di un indice sui nodi (:Question(pid))
+0) Creazione di un indice sulle domande e i vincoli di unicità su {Post, User, Tag}
 
-    CREATE INDEX ON :Question(pid)
+    CREATE INDEX ON :Question(pid);
+    CREATE CONSTRAINT ON (t:Tag) ASSERT t.name IS UNIQUE;
+    CREATE CONSTRAINT ON (p:Post) ASSERT p.pid IS UNIQUE;
+    CREATE CONSTRAINT ON (u:User) ASSERT u.uid IS UNIQUE;
 
 1) Selezione delle ultime dieci domande postate con punteggio positivo e numero di visite superiore a 50;
 
