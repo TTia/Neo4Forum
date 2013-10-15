@@ -67,8 +67,7 @@ Neo4Forum
     Human time (GMT): Wed, 01 May 2013 00:00:00 GMT
     Human time (your time zone): 1/5/2013 02:00:00
 
-    MATCH (q:Question)-[:TaggedWith]->(t:Tag),
-    (p:Post)-[:Replies|Improves]->(q)
+    MATCH (p:Post)-[:Replies|Improves]->(q:Question)-[:TaggedWith]->(t:Tag)
     WHERE q.data >= '1367366400'
     RETURN t.name, count(q)+count(p) AS Totale
     ORDER BY Totale DESC;
@@ -77,8 +76,7 @@ Neo4Forum
     MATCH (q:Question)
     WHERE q.data >= '1367366400'
     WITH q
-    MATCH (q)-[:TaggedWith]->(t:Tag),
-    (p:Post)-[:Replies|Improves]->(q)
+    MATCH (p:Post)-[:Replies|Improves]->(q)-[:TaggedWith]->(t:Tag)
     RETURN t.name, count(q)+count(p) AS Totale
     ORDER BY Totale DESC;
     Returned 240 rows.Query took 223ms
